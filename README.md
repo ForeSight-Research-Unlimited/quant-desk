@@ -116,9 +116,19 @@ needs to start a long-running process; pure libraries don't need one.
 
 ## Backups
 
-Each module has its own git repo (NSW backs up to
-<https://github.com/ForeSight-Research-Unlimited/quant-desk-nsw>).
-Run the module's own `backup.sh`.
+The whole workspace is one monorepo, backed up to a single private GitHub
+repo: <https://github.com/ForeSight-Research-Unlimited/quant-desk>. Back it
+up with one command from the workspace root:
+
+```bash
+./backup.sh                       # auto-timestamped commit + push
+./backup.sh "added RSI indicator" # or your own message
+```
+
+`.gitignore` automatically keeps secrets (`config.json`, certs), the venv,
+`candles.db`, local `preferences.json`, logs, and the legacy
+`Project1 - Original/` (plaintext credentials) out of the backup — they
+stay on your machine only.
 
 ## Why the import error you might hit: `from package.submodule import x` vs `import package`
 

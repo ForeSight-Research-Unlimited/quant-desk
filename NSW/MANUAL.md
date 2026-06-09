@@ -489,32 +489,21 @@ Pin shortcuts of both to your desktop.
 
 ## 14. Backup to GitHub
 
-Repo: <https://github.com/ForeSight-Research-Unlimited/quant-desk-nsw> (private). Initial commit `0a9f179` (19 files, ~2400 lines).
+**NSW is now part of the Quant Desk monorepo** — it is no longer a separate repo. The whole workspace backs up to one private repo: <https://github.com/ForeSight-Research-Unlimited/quant-desk>. The old standalone `quant-desk-nsw` repo has been retired.
 
 ### What's tracked vs what isn't
 
-Tracked: source code (`nsw/*.py`), `templates/`, `scripts/`, `examples/`, `requirements.txt`, `config.example.json`, `start_nsw.bat`, `backup.bat`, `README.md`, `MANUAL.md`, `.gitignore`.
+Tracked: NSW source code (`nsw/*.py`), `templates/`, `scripts/`, `examples/`, `requirements.txt`, `config.example.json`, `README.md`, `MANUAL.md` — alongside the rest of the monorepo (TA, `first_install/`, docs).
 
 Excluded by `.gitignore`: `config.json` (live Fyers credentials), `candles.db*` (the SQLite store and journal files — large and rebuildable), `cert.pem` / `key.pem` (the self-signed cert pair), `*.log` (Fyers SDK logs and our own), `.venv/`, `__pycache__/`, `*.py[cod]`, OS / editor cruft.
 
 ### Routine backup workflow
 
-Either run `./backup.sh` (Linux/macOS) or click `backup.bat` (Windows), or run the steps manually:
+Run `./backup.sh` from the **workspace root** (one level above `NSW/`) — it commits and pushes the whole monorepo:
 
 ```bash
-# Linux / macOS
-cd "<your-path>/Quant Desk/NSW"
-git add -A
-git commit -m "<short message>"
-git push
-```
-
-```cmd
-:: Windows
-cd "<your-path>\Quant Desk\NSW"
-git add -A
-git commit -m "<short message>"
-git push
+cd "<your-path>/Quant Desk"
+./backup.sh "<short message>"
 ```
 
 ### If you ever leak a secret

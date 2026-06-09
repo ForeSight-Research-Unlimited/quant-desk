@@ -70,7 +70,8 @@ NIFTY / BANKNIFTY / FINNIFTY / MIDCPNIFTY in SQLite at
 v3 API integration with OAuth, chunked backfill walking backwards,
 incremental tail update, browser-based setup page at
 `https://127.0.0.1:5001/`. Default tz is Asia/Kolkata. Backed up
-to private GitHub repo `ForeSight-Research-Unlimited/quant-desk-nsw`.
+(with the whole monorepo) to private repo
+`ForeSight-Research-Unlimited/quant-desk`.
 
 **Public API I use from any Python script:**
 ```python
@@ -98,8 +99,9 @@ pre-pointed at it via `.vscode/settings.json`.
    event-driven. Strategy class carries a `FrictionModel` for
    fee/impact-aware signal filtering. First strategy to port: EMA
    Relative Slope from Project1.
-5. **Backups: each module has its own git repo.** Run the
-   module's `backup.bat` (Windows) or `backup.sh` (Linux).
+5. **Backups: one monorepo.** The whole workspace backs up to
+   `ForeSight-Research-Unlimited/quant-desk` via `./backup.sh` at the
+   workspace root. (Superseded the old per-module repos.)
 
 ## Communication style — what works for me
 
