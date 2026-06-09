@@ -18,7 +18,7 @@ A complete guide to what NSW is, how it works, how to operate it day-to-day, and
 10. [Public Python API](#10-public-python-api)
 11. [The browser setup / status page](#11-the-browser-setup--status-page)
 12. [CLI scripts](#12-cli-scripts)
-13. [The launchers (`start_nsw.bat` & `backup.bat`)](#13-the-launchers-start_nswbat--backupbat)
+13. [The launcher (`start_nsw.sh`)](#13-the-launcher-start_nswsh)
 14. [Backup to GitHub](#14-backup-to-github)
 15. [Operational notes](#15-operational-notes)
 16. [Troubleshooting catalogue](#16-troubleshooting-catalogue)
@@ -52,21 +52,20 @@ Everything else is plumbing around these four design choices.
 What actually happens, in time-order, when you go from cold to "I have a DataFrame in my Python REPL":
 
 ```
-[ you double-click start_nsw.bat ]
+[ one-time: ./first_install/install.sh ]
+   builds the shared ../.venv, installs nsw (editable) + deps
               │
               ▼
-   creates .venv if missing
-   pip install -r requirements.txt if needed
-   copies config.example.json → config.json if missing
-   wipes nsw\__pycache__ (defensive)
-              │
-              ▼
+[ ./start_nsw.sh ]   (from NSW/)
+   verifies the shared venv exists, then:
    python -B -m nsw.server
+   (config.json is created from config.example.json on first
+    boot by nsw.config.ensure_config_exists if missing)
               │
               ▼
    Flask app boots on https://127.0.0.1:5001/
    (auto-generates self-signed cert on first run)
-   browser opens to that URL
+   open that URL in your browser
               │
               ▼
    ┌──────────────────────────────────────┐
@@ -90,13 +89,13 @@ What actually happens, in time-order, when you go from cold to "I have a DataFra
      stop on no_data, record API floor
               │
               ▼
-   in your Python REPL (venv active):
+   in any Python that uses the shared venv:
      >>> from nsw.loader import load_data
      >>> df = load_data("NIFTY", "5m")     # cached read, no network
      >>> df = load_data("NIFTY", "5m", update=True)  # tops up tail first
 ```
 
-After this, the daily flow is just `start_nsw.bat` → click **Open Fyers Login** to refresh the daily token → click **Update tail** → use Python.
+After this, the daily flow is just `./start_nsw.sh` → click **Open Fyers Login** to refresh the daily token → click **Update tail** → use Python.
 
 ---
 
@@ -116,9 +115,9 @@ NSW/
 ├─ key.pem                  matching private key (gitignored)
 ├─ fyersApi.log             Fyers SDK's log (gitignored)
 ├─ fyersRequests.log        Fyers SDK's HTTP log (gitignored)
-├─ start_nsw.bat            one-click launcher (Windows)
-├─ backup.bat               one-click GitHub push
-├─ .gitignore               excludes secrets, DB files, .venv, *.pem, *.log
+├─ start_nsw.sh             launcher: verifies the shared venv, runs the server
+├─ diagnostic.sh            shell/venv sanity check
+├─ .gitignore               NSW-local ignores (the venv is built by ../first_install)
 │
 ├─ nsw/                     the package
 │  ├─ __init__.py           version + public-API hint
@@ -456,34 +455,34 @@ Two thin wrappers around the public API; both take `--symbols` and `--intervals`
 
 **`scripts/seed_indices.py`** — full backfill of all four indices × `1m, 1d`. Idempotent: re-running fills only what's missing. Use for first-time data load (or when you want a deeper pull than the GUI default).
 
-```cmd
-python scripts/seed_indices.py
-python scripts/seed_indices.py --symbols NIFTY --intervals 1d
-python scripts/seed_indices.py --max-chunks 200
+```bash
+../.venv/bin/python scripts/seed_indices.py
+../.venv/bin/python scripts/seed_indices.py --symbols NIFTY --intervals 1d
+../.venv/bin/python scripts/seed_indices.py --max-chunks 200
 ```
 
 **`scripts/update_all.py`** — incremental tail update for all pairs. Run before a research session if the GUI isn't already open.
 
-```cmd
-python scripts/update_all.py
-python scripts/update_all.py --symbols NIFTY BANKNIFTY
+```bash
+../.venv/bin/python scripts/update_all.py
+../.venv/bin/python scripts/update_all.py --symbols NIFTY BANKNIFTY
 ```
 
 Both scripts call `database.init_db()` first so they work on a fresh checkout too.
 
 ---
 
-## 13. The launchers (`start_nsw.bat` & `backup.bat`)
+## 13. The launcher (`start_nsw.sh`)
 
-### `start_nsw.bat`
+`start_nsw.sh` does **one** thing: verify the shared venv exists, then launch the server with `python -B -m nsw.server` on `https://127.0.0.1:5001/`. If the venv is missing, it tells you to run `first_install/install.sh` first and exits.
 
-The one-click launcher. On first run: creates `.venv`, installs deps, copies `config.example.json` → `config.json`, generates self-signed cert, opens browser. On subsequent runs: skips everything that's already done and launches in ~1 second. Always wipes `nsw\__pycache__` to dodge the bytecode-staleness gotcha. Always launches with `python -B` so future runs don't write new `.pyc` files. SHA-256-hashes `requirements.txt` and only re-runs `pip install` when the file changes.
+It deliberately does **not**:
 
-### `backup.bat`
+- **Create the venv or install dependencies** — that's owned by `first_install/install.sh`, run once for the whole workspace (it builds `../.venv` and editable-installs every module, NSW included). Re-run `first_install` only when dependencies change or a module is added.
+- **Copy `config.json`** — `nsw.config.ensure_config_exists()` creates it from `config.example.json` on server startup if it's missing.
+- **Wipe `__pycache__`** — that Windows-era defensive wipe is gone (it caused a debugpy cold-start race; see `KNOWN_BUGS.md`). Python's mtime check handles staleness on Linux; if you ever hit stale bytecode, `rm -rf nsw/__pycache__` manually.
 
-The one-click GitHub push. Shows `git status --short` before doing anything. If nothing's changed, just pushes any unpushed local commits and exits. Otherwise asks for a commit message (default: `backup YYYY-MM-DD HH:MM`), stages everything, commits, pushes. Guards against missing remote / not-a-repo / push failure with clear error messages.
-
-Pin shortcuts of both to your desktop.
+Ubuntu-only now — the old Windows `start_nsw.bat` / `backup.bat` have been removed. Backups are no longer per-module: run `./backup.sh` at the **workspace root** to commit + push the whole monorepo (see §14).
 
 ---
 
@@ -526,24 +525,24 @@ cd "<your-path>/Quant Desk"
 
 **Time zones.** Stored timestamps are epoch seconds, treated as UTC. The DataFrame returned by `load_data(...)` is UTC by default; pass `tz="Asia/Kolkata"` for IST. Indian market hours are 09:15–15:30 IST, which is 03:45–10:00 UTC.
 
-**Concurrency.** WAL mode lets your REPL read while the Flask server's background thread writes. Don't open two `start_nsw.bat` instances pointing at the same `candles.db` — only one Flask process at a time.
+**Concurrency.** WAL mode lets your REPL read while the Flask server's background thread writes. Don't run two `start_nsw.sh` instances pointing at the same `candles.db` — only one Flask process at a time (the second fails with "Address already in use" on port 5001).
 
 **Crash safety.** SQLite + WAL is fully crash-safe — power-loss mid-upsert leaves the DB in a consistent state. `config.json` writes are atomic (temp-file + `os.replace`).
 
-**Logs.** `fyersApi.log` and `fyersRequests.log` are written by the Fyers SDK itself; both are gitignored. NSW's own logs go to stdout (the CMD window the launcher runs in).
+**Logs.** `fyersApi.log` and `fyersRequests.log` are written by the Fyers SDK itself; both are gitignored. NSW's own logs go to stdout (the terminal running `./start_nsw.sh`).
 
 ---
 
 ## 16. Troubleshooting catalogue
 
 **"Job backfill-XXXXXXX failed: Fyers history failed after 3 attempts ... no_data"**
-Old `.pyc` from before the no_data fix. Close the server, run: `rmdir /s /q nsw\__pycache__`, restart with `start_nsw.bat`. The launcher does this automatically going forward.
+Old `.pyc` from before the no_data fix. Stop the server, run `rm -rf nsw/__pycache__`, then `./start_nsw.sh` again.
 
 **Browser shows "Your connection is not private"**
 Self-signed cert. Click **Advanced → Proceed**. Once accepted, the browser remembers for the session.
 
 **"No Fyers access_token. Authenticate via the setup page first."**
-Token expired or never set. Open `start_nsw.bat`, click **Open Fyers Login**, complete consent.
+Token expired or never set. Run `./start_nsw.sh`, click **Open Fyers Login**, complete consent.
 
 **"App ID / Secret Key not set (or still on placeholder values)."**
 Edit `config.json` directly, or fill the fields on the setup page and click **Save credentials**.
@@ -552,13 +551,13 @@ Edit `config.json` directly, or fill the fields on the setup page and click **Sa
 Token expired mid-job. Re-auth and re-run.
 
 **Setup page won't load / "site can't be reached"**
-Server isn't running. Check the CMD window from `start_nsw.bat` — if it crashed, the error is at the bottom. Most common cause: port 5001 already in use by another process.
+Server isn't running. Check the terminal running `./start_nsw.sh` — if it crashed, the error is at the bottom. Most common cause: port 5001 already in use by another process.
 
 **Port 5001 conflict**
 If something else is on 5001, edit `nsw/server.py::DEFAULT_PORT` and **also** update the redirect URL in your Fyers app settings to match.
 
-**`pip install` fails on cryptography wheel**
-Install Microsoft Visual C++ Build Tools, then re-run. Or pin an older `cryptography` version in `requirements.txt` that has a prebuilt wheel for your Python.
+**`pip install` fails on a cryptography / aiohttp wheel**
+On Ubuntu with Python 3.12 this shouldn't happen — prebuilt wheels exist for every pinned dep. If it does, make sure you're on Python 3.12 (not 3.13) and that `first_install/install.sh` upgraded pip. (Legacy Windows note: this needed the MSVC Build Tools / Windows SDK — no longer relevant.)
 
 **`git push` rejected**
 Most likely the remote has a newer commit (you backed up from another machine). `git pull --rebase` first, then `git push`.
@@ -611,4 +610,4 @@ Anything that needs candles should `from nsw.loader import load_data`. Stop usin
 
 ---
 
-*Document version: 0.1.0 · Updated 2026-05-10 · Pair with `README.md` for quick-start.*
+*Document version: 0.1.0 · Updated 2026-06-09 (Ubuntu-only; venv owned by `first_install`; monorepo backup) · Pair with `README.md` for quick-start.*
