@@ -1,0 +1,7 @@
+# User-local chart preferences (colors, which EMAs are on). Per-machine, not shared.
+preferences.json
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/

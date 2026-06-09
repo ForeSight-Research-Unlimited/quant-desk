@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nsw"
+version = "0.1.0"
+description = "Local market-data layer for Quant Desk (Fyers-backed)"
+authors = [
+    { name = "ForeSight Research Unlimited", email = "foresightresearchunlimited@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fyers-apiv3>=3.1.7",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "flask>=3.0",
+    "requests>=2.31",
+    "python-dateutil>=2.8",
+    "cryptography>=42.0",
+]
+
+# Install ONLY the `nsw` Python package. Don't sweep up scripts/, examples/,
+# templates/, etc. — those are dev/runtime assets, not part of the importable
+# library.
+[tool.setuptools]
+packages = ["nsw"]
+
+# Allow `pip install -e .` to find this project when run from the NSW folder.
+[tool.setuptools.package-data]
+nsw = ["py.typed"]

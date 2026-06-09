@@ -1,0 +1,97 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    background: #0e1117;
+    color: #c8c8c8;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 13px;
+}
+
+body { display: flex; flex-direction: column; height: 100vh; }
+
+#controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    background: #131722;
+    border-bottom: 1px solid #1e2230;
+    flex: 0 0 auto;
+}
+
+#controls .title { font-weight: 700; color: #f7dc6f; letter-spacing: 1px; }
+
+#controls label { display: flex; align-items: center; gap: 6px; color: #888; }
+
+#controls select,
+#controls input {
+    background: #0e1117;
+    color: #c8c8c8;
+    border: 1px solid #2a2f3e;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+}
+
+#controls input[type="number"] { width: 70px; }
+
+#controls button {
+    background: #4ecdc4;
+    color: #0e1117;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+#controls button:hover { background: #3db5ad; }
+
+#status { color: #6b7280; margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* Dropdowns (Indicators, Settings) */
+.dropdown { position: relative; }
+#indicatorBtn, #settingsBtn, #paneSettingsBtn {
+    background: #1b2030; color: #c8c8c8; border: 1px solid #2a2f3e;
+    border-radius: 4px; padding: 5px 12px; cursor: pointer;
+}
+#indicatorBtn:hover, #settingsBtn:hover, #paneSettingsBtn:hover { background: #232838; }
+.dropdown-panel {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 50;
+    background: #131722; border: 1px solid #2a2f3e; border-radius: 6px;
+    padding: 8px; min-width: 150px; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+.dropdown-panel.hidden { display: none; }
+.dropdown-group-label { color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin: 2px 4px 6px; }
+.ind-row { display: flex; align-items: center; gap: 7px; padding: 4px 4px; color: #c8c8c8; cursor: pointer; white-space: nowrap; }
+.ind-row:hover { background: #1b2030; border-radius: 4px; }
+/* push the color picker to the right edge of each row */
+.ind-row input[type="color"] {
+    margin-left: auto; width: 26px; height: 18px; padding: 0;
+    background: none; border: 1px solid #2a2f3e; border-radius: 3px; cursor: pointer;
+}
+#hint { color: #4b5563; font-size: 11px; margin-left: 12px; white-space: nowrap; }
+
+/* indicator pane tag (price / lower) */
+.pane-tag { margin-left: auto; color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Go-to-date popup */
+.goto-row { display: flex; align-items: center; gap: 6px; }
+#gotoInput {
+    background: #0e1117; color: #c8c8c8; border: 1px solid #2a2f3e;
+    border-radius: 4px; padding: 4px 6px; font-size: 13px; color-scheme: dark;
+}
+#gotoGo {
+    background: #4ecdc4; color: #0e1117; border: none; border-radius: 4px;
+    padding: 4px 12px; font-weight: 600; cursor: pointer;
+}
+#gotoGo:hover { background: #3db5ad; }
+
+main { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+
+.chart { width: 100%; }
+#priceChart { flex: 3 1 0; min-height: 0; }
+/* dynamic stack of lower indicator panes */
+#panes { flex: 2 1 0; min-height: 0; display: flex; flex-direction: column; }
+#panes:empty { flex: 0 0 0; }   /* collapse when no lower indicators are on */
+.pane { flex: 1 1 0; min-height: 0; width: 100%; border-top: 1px solid #1e2230; }

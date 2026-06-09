@@ -1,0 +1,16 @@
+# Quant Desk -- module manifest.
+#
+# One module folder per line, relative to the workspace root. first_install/
+# install.sh editable-installs each one into the shared venv (pip install -e).
+# Add a line here the moment you create a new module (TA, backtester, viz, live).
+#
+# Rules:
+#   - blank lines and lines starting with '#' are ignored
+#   - a trailing '# comment' on a line is stripped
+#   - a listed folder with no pyproject.toml is skipped with a warning
+#
+# Order matters only if one module depends on another at install time; today
+# they're independent, so order is cosmetic.
+
+NSW
+TA

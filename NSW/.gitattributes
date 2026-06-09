@@ -1,0 +1,26 @@
+# Normalise line endings across Linux / macOS / Windows checkouts.
+#
+# `* text=auto eol=lf` tells git to:
+#   - detect text vs binary automatically,
+#   - store text files with LF in the repo,
+#   - check them out with LF on every OS (so Windows users with
+#     core.autocrlf=true won't get CRLF surprises in their working tree).
+#
+# The two exceptions below pin per-file-type endings:
+#   - .sh files must stay LF — CRLF breaks `#!/usr/bin/env bash`.
+#   - .bat files must stay CRLF — some Windows shells choke on LF .bat.
+
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.bat  text eol=crlf
+
+# Treat these as binary so git doesn't try to diff or normalise them.
+*.db         binary
+*.db-wal     binary
+*.db-shm     binary
+*.pem        binary
+*.png        binary
+*.jpg        binary
+*.ico        binary
+*.pdf        binary

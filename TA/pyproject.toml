@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ta"
+version = "0.1.0"
+description = "Technical analysis + charting layer for Quant Desk (TradingView Lightweight Charts)"
+authors = [
+    { name = "ForeSight Research Unlimited", email = "foresightresearchunlimited@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+# NOTE: `nsw` is a sibling module, editable-installed into the SAME shared venv
+# by first_install/install.sh -- it is NOT listed here (it's not on PyPI).
+# pandas comes in via nsw too; listed again only so this is self-documenting.
+dependencies = [
+    "flask>=3.0",
+    "pandas>=2.0",
+]
+
+[tool.setuptools]
+packages = ["ta"]
+
+# Ship the chart page + JS/CSS assets with the package.
+[tool.setuptools.package-data]
+ta = ["templates/*.html", "static/css/*.css", "static/js/*.js"]

@@ -1,0 +1,18 @@
+# DEPRECATED — left as a stub for hand-rolled `pip install -r` workflows only.
+#
+# The canonical dependency list for NSW lives in `pyproject.toml`. The
+# launcher (`start_nsw.bat`) installs everything via `pip install -e .`,
+# which reads pyproject.toml. You don't need this file.
+#
+# Safe to delete. We kept it (with this notice) because some users muscle-
+# memory `pip install -r requirements.txt` -- if you do, the deps below
+# will still be installed, just from a stale copy. Prefer `pip install -e .`
+# from the NSW folder.
+
+fyers-apiv3>=3.1.7
+pandas>=2.0
+numpy>=1.24
+flask>=3.0
+requests>=2.31
+python-dateutil>=2.8
+cryptography>=42.0

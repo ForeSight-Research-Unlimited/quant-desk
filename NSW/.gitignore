@@ -1,0 +1,25 @@
+# Secrets and local state — never commit these
+config.json
+candles.db
+candles.db-wal
+candles.db-shm
+*.pem
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+.fuse_hidden*  # ntfs-3g leaves these when a file is deleted while still open
+
+# Editors
+.vscode/
+.idea/
+*.swp

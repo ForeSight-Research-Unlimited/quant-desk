@@ -1,0 +1,51 @@
+# Quant Desk -- shared "research / scratch script" dependencies.
+#
+# These libraries don't belong to any specific module (NSW, future
+# backtester, viz, live). They're things you'll want available in the
+# shared venv for ad-hoc notebooks, exploratory scripts like test1.py,
+# plotting, statistical work, etc.
+#
+# Install into the SHARED venv at <Quant Desk>/.venv/:
+#
+#     # Linux / macOS
+#     ./.venv/bin/pip install -r requirements-dev.txt
+#
+#     # Windows
+#     ".venv\Scripts\pip" install -r requirements-dev.txt
+#
+# or, with the venv active:
+#
+#     pip install -r requirements-dev.txt
+#
+# Add lines as you discover new libraries you keep installing manually.
+
+# --- Plotting -----------------------------------------------------------------
+matplotlib                       # the workhorse
+mplfinance                       # OHLC / candlestick charts
+seaborn                          # nicer statistical plots on top of matplotlib
+
+# --- Math / stats / modeling --------------------------------------------------
+scipy                            # optimisation, stats, signal processing
+scikit-learn                     # general ML
+statsmodels                      # time-series stats, ARIMA, OLS
+
+# --- Notebooks / REPL ---------------------------------------------------------
+jupyter                          # notebook server
+ipython                          # better interactive shell
+ipykernel                        # required for VSCode notebook kernels
+
+# --- Performance --------------------------------------------------------------
+numba                            # JIT compiler for hot numeric loops, optional
+
+# --- Quality of life ----------------------------------------------------------
+tqdm                             # progress bars in long loops
+tabulate                         # pretty-print DataFrames
+
+# --- Pins / conflict resolution -----------------------------------------------
+# fyers-apiv3 pins websocket-client==1.6.1 exactly; jupyter-server wants >=1.7.
+# These are mutually exclusive in the shared venv. Fyers is load-bearing for the
+# data layer, so we pin to 1.6.1 and accept that the Jupyter *notebook server*
+# may warn / not start its websockets. Plain scripts, plotting, ipython, scipy,
+# sklearn are all unaffected. Without this line, installing the dev libs silently
+# bumps websocket-client to 1.9.0 and can break Fyers auth/backfill.
+websocket-client==1.6.1

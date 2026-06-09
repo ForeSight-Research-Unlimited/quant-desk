@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NSW — Setup</title>
+  <style>
+    :root {
+      --bg: #0e1116;
+      --panel: #161b22;
+      --border: #30363d;
+      --fg: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --ok: #3fb950;
+      --warn: #d29922;
+      --err: #f85149;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 32px;
+      background: var(--bg); color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    h1 { font-weight: 600; margin: 0 0 4px; }
+    h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em;
+         color: var(--muted); margin: 28px 0 12px; }
+    .container { max-width: 980px; margin: 0 auto; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; margin-bottom: 16px;
+    }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    input[type=text], input[type=password] {
+      width: 100%; background: #0d1117; border: 1px solid var(--border);
+      border-radius: 6px; color: var(--fg); padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    .field { flex: 1 1 280px; }
+    .full { flex: 1 1 100%; }
+    button {
+      background: var(--accent); color: #0d1117; border: 0;
+      border-radius: 6px; padding: 8px 14px;
+      font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    button.secondary {
+      background: transparent; color: var(--fg); border: 1px solid var(--border);
+    }
+    button:hover { filter: brightness(1.1); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { display: inline-block; padding: 2px 8px;
+              border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .status.ok    { background: rgba(63,185,80,.15);  color: var(--ok); }
+    .status.warn  { background: rgba(210,153,34,.15); color: var(--warn); }
+    .status.err   { background: rgba(248,81,73,.15);  color: var(--err); }
+    .status.muted { background: rgba(139,148,158,.15);color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td {
+      text-align: left; padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 500; font-size: 12px;
+         text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .muted { color: var(--muted); }
+    .help { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+    pre.log {
+      background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+      padding: 12px; font-size: 12px; max-height: 240px; overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap; color: var(--muted);
+    }
+    .hint { color: var(--accent); font-size: 12px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>NSW</h1>
+  <div class="muted">Local market-data layer · Fyers backend</div>
+
+  <!-- Credentials ------------------------------------------------------- -->
+  <h2>1. Fyers credentials</h2>
+  <div class="panel">
+    <div class="row">
+      <div class="field">
+        <label>App ID</label>
+        <input id="app_id" type="text" value="{{ creds.app_id }}"
+               placeholder="ABCD1234-100">
+      </div>
+      <div class="field">
+        <label>Secret Key</label>
+        <input id="secret_key" type="password" value="{{ creds.secret_key }}"
+               placeholder="••••••••••">
+      </div>
+      <div class="field">
+        <label>Redirect URL</label>
+        <input id="redirect_url" type="text" value="{{ creds.redirect_url }}">
+      </div>
+    </div>
+    <div class="help">
+      Set the redirect URL to <code>https://127.0.0.1:5001/callback</code> in
+      your Fyers app at
+      <a href="https://myapi.fyers.in" target="_blank" rel="noopener">myapi.fyers.in</a>.
+      Changing the App ID or Secret Key clears the access token automatically.
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <button id="btnSaveCreds">Save credentials</button>
+      <span id="credsStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <!-- Auth -------------------------------------------------------------- -->
+  <h2>2. Authenticate</h2>
+  <div class="panel">
+    <div class="row">
+      Token status:
+      {% if token_ok %}
+        <span class="status ok">Connected</span>
+      {% elif creds.access_token %}
+        <span class="status err">Invalid / expired</span>
+      {% else %}
+        <span class="status muted">Not authenticated</span>
+      {% endif %}
+      <span class="muted">{{ token_msg }}</span>
+    </div>
+    {% if creds.access_token_issued_at %}
+      <div class="help">Token issued at {{ creds.access_token_issued_at }}.</div>
+    {% endif %}
+    <div class="row" style="margin-top: 12px;">
+      <button id="btnAuth">Open Fyers Login</button>
+      <button id="btnCheck" class="secondary">Re-check token</button>
+      <span id="authStatus" class="muted"></span>
+    </div>
+    <div class="help">
+      Tokens expire daily. Click <b>Open Fyers Login</b>, complete consent in the
+      new tab, and you'll be redirected back here once it's done.
+    </div>
+  </div>
+
+  <!-- Database --------------------------------------------------------- -->
+  <h2>3. Local database</h2>
+  <div class="panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Interval</th>
+          <th class="num">Bars</th>
+          <th>Earliest</th>
+          <th>Latest</th>
+        </tr>
+      </thead>
+      <tbody id="coverageTbody">
+        {% for row in coverage %}
+        <tr>
+          <td>{{ row.symbol }}</td>
+          <td>{{ row.interval }}</td>
+          <td class="num">{{ "{:,}".format(row.count) }}</td>
+          <td class="muted">
+            {% if row.earliest_ts %}{{ row.earliest_ts | int }}{% else %}—{% endif %}
+          </td>
+          <td class="muted">
+            {% if row.latest_ts %}{{ row.latest_ts | int }}{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="row" style="margin-top: 14px;">
+      <button id="btnUpdate">Update tail</button>
+      <button id="btnBackfill" class="secondary">Run full backfill</button>
+      <span id="jobStatus" class="muted"></span>
+    </div>
+    <div class="help">
+      "Update tail" pulls only bars after the latest stored bar for each
+      symbol × base interval (1m, 1d). "Full backfill" walks history backwards
+      in chunks until Fyers stops giving data — heavy first time, near-no-op
+      afterwards.
+    </div>
+    <pre id="jobLog" class="log" hidden></pre>
+  </div>
+
+</div>
+
+<script>
+async function postJSON(url, body) {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body || {}),
+  });
+  return await r.json();
+}
+async function getJSON(url) { return await (await fetch(url)).json(); }
+
+// ----- Credentials -----------------------------------------------------
+document.getElementById("btnSaveCreds").addEventListener("click", async () => {
+  const body = {
+    app_id: document.getElementById("app_id").value.trim(),
+    secret_key: document.getElementById("secret_key").value.trim(),
+    redirect_url: document.getElementById("redirect_url").value.trim(),
+  };
+  const r = await postJSON("/api/credentials", body);
+  document.getElementById("credsStatus").textContent =
+    r.ok ? "Saved." : ("Error: " + (r.error || "unknown"));
+});
+
+// ----- Auth ------------------------------------------------------------
+document.getElementById("btnAuth").addEventListener("click", async () => {
+  const r = await getJSON("/api/auth/url");
+  if (!r.ok) {
+    document.getElementById("authStatus").textContent = "Error: " + r.error;
+    return;
+  }
+  window.open(r.url, "_blank", "noopener");
+  document.getElementById("authStatus").textContent =
+    "Consent opened in a new tab. After approving, this page will refresh.";
+});
+document.getElementById("btnCheck").addEventListener("click", async () => {
+  const r = await getJSON("/api/token/check");
+  document.getElementById("authStatus").textContent =
+    (r.ok ? "OK · " : "Failed · ") + (r.message || "");
+});
+
+// ----- Jobs ------------------------------------------------------------
+let pollTimer = null;
+function startPoll(jobId) {
+  const log = document.getElementById("jobLog");
+  log.hidden = false;
+  log.textContent = "Job " + jobId + " queued…\n";
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    const r = await getJSON("/api/job/" + jobId);
+    if (!r.ok) return;
+    const j = r.job;
+    document.getElementById("jobStatus").textContent =
+      jobId + " · " + j.status;
+    if (j.progress) {
+      log.textContent += "  chunk " + j.progress.chunk +
+        " · " + j.progress.from + ".." + j.progress.to +
+        " · " + j.progress.rows + " rows (total " + j.progress.total_rows + ")\n";
+      log.scrollTop = log.scrollHeight;
+    }
+    if (j.status === "done" || j.status === "error") {
+      clearInterval(pollTimer);
+      log.textContent += (j.status === "done")
+        ? "\nDone. " + JSON.stringify(j.result, null, 2) + "\n"
+        : "\nError: " + j.error + "\n";
+      // Refresh coverage table after backfill/update.
+      const cov = await getJSON("/api/coverage");
+      if (cov.ok) renderCoverage(cov.coverage);
+    }
+  }, 1500);
+}
+document.getElementById("btnUpdate").addEventListener("click", async () => {
+  const r = await postJSON("/api/update", {});
+  if (r.ok) startPoll(r.job_id);
+});
+document.getElementById("btnBackfill").addEventListener("click", async () => {
+  if (!confirm("Run full backfill? This may take several minutes and burn API calls.")) return;
+  const r = await postJSON("/api/backfill", {});
+  if (r.ok) startPoll(r.job_id);
+});
+
+function renderCoverage(rows) {
+  const tbody = document.getElementById("coverageTbody");
+  tbody.innerHTML = "";
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    const fmt = (n) => n == null ? "—" : new Date(n * 1000).toISOString().slice(0, 16).replace("T", " ");
+    tr.innerHTML =
+      `<td>${row.symbol}</td>` +
+      `<td>${row.interval}</td>` +
+      `<td class="num">${(row.count || 0).toLocaleString()}</td>` +
+      `<td class="muted">${fmt(row.earliest_ts)}</td>` +
+      `<td class="muted">${fmt(row.latest_ts)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+// On load, render the human-readable timestamps for the server-rendered rows
+(async () => {
+  const cov = await getJSON("/api/coverage");
+  if (cov.ok) renderCoverage(cov.coverage);
+})();
+</script>
+</body>
+</html>

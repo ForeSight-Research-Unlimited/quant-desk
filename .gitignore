@@ -1,0 +1,41 @@
+# ============================================================
+#  Quant Desk -- monorepo .gitignore
+#  Keep secrets, credentials, heavy/regenerable, and legacy
+#  reference code OUT of version control.
+# ============================================================
+
+# --- Python venv (rebuild with first_install/install.sh) ---
+.venv/
+*.egg-info/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# --- Claude Code local state + credentials -- NEVER commit ---
+.claude/
+
+# --- Secrets / credentials ---
+# config.json holds live broker keys (Fyers etc.); the *.example.json
+# templates are safe and intentionally NOT ignored.
+**/config.json
+**/cert.pem
+**/key.pem
+
+# --- Local per-machine user prefs ---
+**/preferences.json
+
+# --- Data store (huge + regenerable; >100MB GitHub limit anyway) ---
+**/candles.db
+**/candles.db-wal
+**/candles.db-shm
+
+# --- Logs (may contain auth headers) ---
+*.log
+
+# --- Legacy reference codebase: EXCLUDED.
+#     Contains plaintext live Upstox credentials. Stays local only. ---
+Project1 - Original/
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db

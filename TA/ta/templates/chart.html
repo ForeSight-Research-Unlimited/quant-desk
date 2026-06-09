@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TA — Quant Desk</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header id="controls">
+        <span class="title">TA</span>
+
+        <label>Symbol
+            <select id="symbol">
+                {% for s in symbols %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+            </select>
+        </label>
+
+        <label>Timeframe
+            <select id="tf">
+                {% for t in timeframes %}<option value="{{ t }}"{% if t == '1d' %} selected{% endif %}>{{ t }}</option>{% endfor %}
+            </select>
+        </label>
+
+        <label>Bars
+            <input id="bars" type="number" min="0" step="50" placeholder="all">
+        </label>
+
+        <!-- Go to a specific date/time (Alt+G). -->
+        <div class="dropdown">
+            <button id="gotoBtn" type="button">Go to</button>
+            <div id="gotoPanel" class="dropdown-panel hidden">
+                <div class="dropdown-group-label">Go to date</div>
+                <div class="goto-row">
+                    <input id="gotoInput" type="datetime-local">
+                    <button id="gotoGo" type="button">Go</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicators: EMA overlay family + everything registered in library.py. -->
+        <div class="dropdown">
+            <button id="indicatorBtn" type="button">Indicators ▾</button>
+            <div id="indicatorPanel" class="dropdown-panel hidden">
+                <div class="dropdown-group-label">EMA</div>
+                {% for p in ema_periods %}
+                <label class="ind-row">
+                    <input type="checkbox" class="ema-toggle" data-period="{{ p }}">
+                    EMA {{ p }}
+                    <input type="color" class="ema-color" data-period="{{ p }}" title="EMA {{ p }} color">
+                </label>
+                {% endfor %}
+
+                <div class="dropdown-group-label">Indicators</div>
+                {% for ind in indicators %}
+                <label class="ind-row">
+                    <input type="checkbox" class="ind-toggle"
+                           data-id="{{ ind.id }}" data-pane="{{ ind.pane }}"
+                           data-default-on="{{ 'true' if ind.default_on else 'false' }}">
+                    {{ ind.name }}
+                    <span class="pane-tag">{{ ind.pane }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main pane colors. -->
+        <div class="dropdown">
+            <button id="settingsBtn" type="button">Main ⚙</button>
+            <div id="settingsPanel" class="dropdown-panel hidden">
+                <div class="dropdown-group-label">Main pane</div>
+                <label class="ind-row">Background <input type="color" class="color-pref" data-key="background"></label>
+                <label class="ind-row">Grid <input type="color" class="color-pref" data-key="grid"></label>
+                <label class="ind-row">Candle up <input type="color" class="color-pref" data-key="candle_up"></label>
+                <label class="ind-row">Candle down <input type="color" class="color-pref" data-key="candle_down"></label>
+                <label class="ind-row">Log scale <input type="checkbox" id="logMain"></label>
+            </div>
+        </div>
+
+        <!-- Lower indicator panes colors (applies to all panes). -->
+        <div class="dropdown">
+            <button id="paneSettingsBtn" type="button">Panes ⚙</button>
+            <div id="paneSettingsPanel" class="dropdown-panel hidden">
+                <div class="dropdown-group-label">Lower panes</div>
+                <label class="ind-row">Background <input type="color" class="color-pref" data-key="pane_background"></label>
+                <label class="ind-row">Grid <input type="color" class="color-pref" data-key="pane_grid"></label>
+                <label class="ind-row">Log scale <input type="checkbox" id="logPanes"></label>
+            </div>
+        </div>
+
+        <button id="loadBtn">Load</button>
+        <span id="status"></span>
+        <span id="hint" title="Keyboard shortcuts">Alt+G go to · Alt+I invert · Alt+R reset</span>
+    </header>
+
+    <main>
+        <div id="priceChart" class="chart"></div>
+        <div id="panes"></div>
+    </main>
+
+    <script src="/static/js/lightweight-charts.standalone.production.js"></script>
+    <script src="/static/js/ta_chart.js"></script>
+</body>
+</html>

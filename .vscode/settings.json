@@ -1,0 +1,18 @@
+{
+  "_comment_interpreter": "Workspace-wide Python interpreter for the Quant Desk monorepo. This single venv is shared across all modules (NSW today, plus future backtester, viz, live). Any module added later just installs editably into this same venv -- no per-module interpreter config needed. Path below is the Linux/macOS layout (.venv/bin/python). On Windows fallback, point VSCode at ${workspaceFolder}/.venv/Scripts/python.exe manually via 'Python: Select Interpreter'.",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+
+  "_comment_files": "Treat the Quant Desk folder as the project root for file-search and indexing purposes; ignore the venv and cached bytecode.",
+  "files.exclude": {
+    "**/__pycache__": true,
+    //"**/.venv": true,
+    "**/*.pyc": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/*.pyc": true,
+    "**/*.log": true
+  }
+}
